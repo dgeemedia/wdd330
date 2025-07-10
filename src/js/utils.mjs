@@ -40,3 +40,10 @@ export function setClick(selector, callback) {
   });
   element.addEventListener("click", callback);
 }
+
+// Get a query parameter from the URL
+export function getParam(param) {
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  return urlParams.get(param);
+}
