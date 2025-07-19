@@ -1,0 +1,14 @@
+[
+  {
+    "id": "alert1",
+    "message": "This is only a test",
+    "background": "darkblue",
+    "color": "white"
+  },
+  {
+    "id": "alert2",
+    "message": "Don't forget to check out our summer deals!",
+    "background": "darkgreen",
+    "color": "white"
+  }
+]
