@@ -94,6 +94,36 @@ p {
   margin-top: -1.7em;
 }
 
+/* Product Category */
+.categories {
+  text-align: center;
+  padding: 20px;
+}
+
+.category-list {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.category-item {
+  text-decoration: none;
+  color: inherit;
+  width: 150px;
+  text-align: center;
+}
+
+.category-item img {
+  width: 100px;
+  height: 100px;
+}
+
+.category-item h3 {
+  margin: 10px 0 0;
+  font-size: 1.2em;
+}
+
 /* utility classes */
 .highlight {
   color: var(--tertiary-color);
