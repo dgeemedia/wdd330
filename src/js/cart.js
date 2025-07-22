@@ -1,3 +1,6 @@
+import "../css/style.css";
+
+
 import { getLocalStorage } from "./utils.mjs";
 
 function renderCartContents() {
