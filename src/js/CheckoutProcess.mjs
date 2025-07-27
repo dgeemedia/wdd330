@@ -1,4 +1,5 @@
 import ExternalServices from './ExternalServices.mjs';
+import { alertMessage } from './utils.mjs';
 
 function formDataToJSON(formElement) {
   const formData = new FormData(formElement),
@@ -13,13 +14,14 @@ function formDataToJSON(formElement) {
 
 export default class CheckoutProcess {
   constructor(key, outputSelector) {
-    this.key = key;
+    this.key = 'so-cart'; // Updated to match ProductDetails
     this.outputSelector = outputSelector;
     this.list = [];
     this.itemTotal = 0;
     this.shipping = 0;
     this.tax = 0;
     this.orderTotal = 0;
+    this.services = new ExternalServices();
   }
 
   init() {
@@ -84,47 +86,41 @@ export default class CheckoutProcess {
 
     try {
       const response = await this.services.checkout(order);
-      alert('Order submitted successfully!');
-      console.log(response); // For debugging; handle success response in next activity
+      localStorage.removeItem(this.key); // Clear cart
+      window.location.href = 'success.html'; // Redirect to success page
     } catch (error) {
-      alert('Order submission failed. Please try again.');
+      if (error.name === 'servicesError') {
+        alertMessage(error.message.message || 'Order submission failed. Please check your input and try again.', true);
+      } else {
+        alertMessage('An unexpected error occurred. Please try again later.', true);
+      }
       console.error(error);
     }
-  }   
+  }
 }
 
 // Initialize CheckoutProcess on page load
 document.addEventListener('DOMContentLoaded', () => {
-  const checkout = new CheckoutProcess('cart', '#orderSummary');
+  const checkout = new CheckoutProcess('so-cart', '#orderSummary');
   checkout.init();
 
   // Trigger order total calculation when zip code is filled
-  const zipCodeInput = document.querySelector('#zipCode');
+  const zipCodeInput = document.querySelector('#zip');
   zipCodeInput.addEventListener('input', () => {
     if (zipCodeInput.value.trim()) {
       checkout.calculateOrderTotal();
     }
   });
 
-  // Form validation
+  // Form validation and submission
   const checkoutForm = document.querySelector('#checkoutForm');
   checkoutForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const inputs = checkoutForm.querySelectorAll('input[required]');
-    let allFilled = true;
-    inputs.forEach(input => {
-      if (!input.value.trim()) {
-        allFilled = false;
-        input.classList.add('border-red-500');
-      } else {
-        input.classList.remove('border-red-500');
-      }
-    });
-    if (allFilled) {
-      alert('Checkout submitted successfully!');
-      // Add server-side submission logic here
-    } else {
-      alert('Please fill out all required fields.');
+    const myForm = checkoutForm;
+    const chk_status = myForm.checkValidity();
+    myForm.reportValidity();
+    if (chk_status) {
+      checkout.checkout(myForm);
     }
   });
 });

@@ -1,4 +1,5 @@
-import { getLocalStorage, setLocalStorage } from './utils.mjs';
+import ExternalServices from './ExternalServices.mjs';
+import { getLocalStorage, setLocalStorage, alertMessage } from './utils.mjs';
 
 export default class ProductDetails {
   constructor(productId, dataSource) {
@@ -11,7 +12,7 @@ export default class ProductDetails {
     this.product = await this.dataSource.findProductById(this.productId);
     if (!this.product) {
       console.error('Product not found for ID:', this.productId);
-      alert('Product not found. Please try again.');
+      alertMessage('Product not found. Please try again.', true);
       return;
     }
     this.renderProductDetails();
@@ -23,23 +24,52 @@ export default class ProductDetails {
   }
 
   addProductToCart(product) {
-    let cartItems = getLocalStorage('so-cart');
+    let cartItems = getLocalStorage('so-cart') || [];
     if (!Array.isArray(cartItems)) {
-      cartItems = cartItems && typeof cartItems === 'object' ? [cartItems] : [];
+      cartItems = [];
     }
-    cartItems.push(product);
+
+    // Check if product already exists in cart
+    const existingItem = cartItems.find(item => item.id === product.Id);
+    if (existingItem) {
+      existingItem.quantity = (existingItem.quantity || 1) + 1;
+    } else {
+      cartItems.push({
+        id: product.Id,
+        name: product.Name,
+        price: product.FinalPrice,
+        quantity: 1,
+      });
+    }
+
     setLocalStorage('so-cart', cartItems);
-    alert('Product added to cart!');
+    alertMessage(`${product.Name} added to cart!`, false);
   }
 
   renderProductDetails() {
-    document.querySelector('.product-detail h3').textContent = this.product.Brand.Name;
-    document.querySelector('.divider h2').textContent = this.product.NameWithoutBrand;
-    document.querySelector('.divider img').src = this.product.Images.PrimaryLarge;
-    document.querySelector('.divider img').alt = this.product.Name;
-    document.querySelector('.product-card__price').textContent = `$${this.product.FinalPrice}`;
-    document.querySelector('.product__color').textContent = this.product.Colors[0].ColorName;
-    document.querySelector('.product__description').innerHTML = this.product.DescriptionHtmlSimple;
-    document.querySelector('#addToCart').dataset.id = this.product.Id;
+    const selectors = {
+      brand: '.product-detail h3',
+      name: '.divider h2',
+      image: '.divider img',
+      price: '.product-card__price',
+      color: '.product__color',
+      description: '.product__description',
+      addToCart: '#addToCart',
+    };
+
+    try {
+      document.querySelector(selectors.brand).textContent = this.product.Brand?.Name || 'Unknown Brand';
+      document.querySelector(selectors.name).textContent = this.product.NameWithoutBrand || this.product.Name;
+      const imageElement = document.querySelector(selectors.image);
+      imageElement.src = this.product.Images?.PrimaryLarge || '';
+      imageElement.alt = this.product.Name || 'Product Image';
+      document.querySelector(selectors.price).textContent = `$${this.product.FinalPrice?.toFixed(2) || '0.00'}`;
+      document.querySelector(selectors.color).textContent = this.product.Colors?.[0]?.ColorName || 'N/A';
+      document.querySelector(selectors.description).innerHTML = this.product.DescriptionHtmlSimple || 'No description available';
+      document.querySelector(selectors.addToCart).dataset.id = this.product.Id;
+    } catch (error) {
+      console.error('Error rendering product details:', error);
+      alertMessage('Failed to display product details. Please try again.', true);
+    }
   }
 }

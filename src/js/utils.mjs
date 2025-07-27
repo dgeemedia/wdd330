@@ -1,4 +1,3 @@
-// utils.mjs
 // wrapper for querySelector...returns matching element
 export function qs(selector, parent = document) {
   return parent.querySelector(selector);
@@ -78,6 +77,25 @@ export async function loadHeaderFooter() {
   const headerElement = document.querySelector("#main-header");
   const footerElement = document.querySelector("#main-footer");
 
-renderWithTemplate(headerTemplate, headerElement);
+  renderWithTemplate(headerTemplate, headerElement);
   renderWithTemplate(footerTemplate, footerElement);
+}
+
+export function alertMessage(message, scroll = true) {
+  const alert = document.createElement('div');
+  alert.classList.add('alert');
+  alert.innerHTML = `
+    <span>${message}</span>
+    <span class="close-alert">X</span>
+  `;
+  alert.addEventListener('click', function (e) {
+    if (e.target.classList.contains('close-alert')) {
+      this.remove();
+    }
+  });
+  const main = document.querySelector('main');
+  main.prepend(alert);
+  if (scroll) {
+    window.scrollTo(0, 0);
+  }
 }
